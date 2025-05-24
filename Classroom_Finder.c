@@ -1,151 +1,257 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
-#define MAX_RECORDS 200
+#define MAX_RECORDS 5000
 
 typedef struct {
     char day[10];
-    char date[15];
-    char time[6];
-    char building[10];
+    char timeSlot[20];
     char room[10];
-    char status[10];
+    char course[50];
+    char year[5];
+    char division[5];
+    char subject[50];
+    char teacher[50];
 } RoomRecord;
 
-// Trim leading/trailing whitespace and newline characters
 void trim(char *str) {
-    int i = 0, j = 0;
-    while (str[i] == ' ' || str[i] == '\t') i++;
-    while (str[i]) str[j++] = str[i++];
-    str[j] = '\0';
+    // Trim leading spaces
+    char *start = str;
+    while (isspace((unsigned char)*start)) start++;
+    if (start != str) memmove(str, start, strlen(start) + 1);
 
-    j = strlen(str) - 1;
-    while (j >= 0 && (str[j] == ' ' || str[j] == '\n' || str[j] == '\r')) str[j--] = '\0';
+    // Trim trailing spaces
+    char *end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) {
+        *end = '\0';
+        end--;
+    }
 }
 
-int parseCSV(const char *filename, RoomRecord records[]) {
-    FILE *file = fopen(filename, "r");
-    if (!file) {
-        printf("Could not open the file.\n");
-        return 0;
-    }
+void toLowerCase(char *str) {
+    for (int i = 0; str[i]; i++) str[i] = tolower(str[i]);
+}
 
-    char line[200];
+int parseCSV(RoomRecord records[]) {
+    FILE *file = fopen("college_timetable.csv", "r");
+    if (!file) {
+        perror("Failed to open file");
+        exit(1);
+    }
+    char line[512];
     int count = 0;
     fgets(line, sizeof(line), file); // Skip header
-
     while (fgets(line, sizeof(line), file)) {
         char *token = strtok(line, ",");
         if (!token) continue;
-        strcpy(records[count].day, token); trim(records[count].day);
 
+        strcpy(records[count].day, token);
         token = strtok(NULL, ",");
-        if (!token) continue;
-        strcpy(records[count].date, token); trim(records[count].date);
+        strcpy(records[count].timeSlot, token ? token : "");
+        token = strtok(NULL, ",");
+        strcpy(records[count].room, token ? token : "");
+        token = strtok(NULL, ",");
+        strcpy(records[count].course, token ? token : "");
+        token = strtok(NULL, ",");
+        strcpy(records[count].year, token ? token : "");
+        token = strtok(NULL, ",");
+        strcpy(records[count].division, token ? token : "");
+        token = strtok(NULL, ",");
+        strcpy(records[count].subject, token ? token : "");
+        token = strtok(NULL, ",\n");
+        strcpy(records[count].teacher, token ? token : "");
 
-        token = strtok(NULL, ",");
-        if (!token) continue;
-        strcpy(records[count].time, token); trim(records[count].time);
-
-        token = strtok(NULL, ",");
-        if (!token) continue;
-        strcpy(records[count].building, token); trim(records[count].building);
-
-        token = strtok(NULL, ",");
-        if (!token) continue;
-        strcpy(records[count].room, token); trim(records[count].room);
-
-        token = strtok(NULL, ",");
-        if (!token) continue;
-        strcpy(records[count].status, token); trim(records[count].status);
+        trim(records[count].day);
+        trim(records[count].timeSlot);
+        trim(records[count].room);
+        trim(records[count].course);
+        trim(records[count].year);
+        trim(records[count].division);
+        trim(records[count].subject);
+        trim(records[count].teacher);
 
         count++;
     }
-
     fclose(file);
     return count;
 }
 
-void option1(RoomRecord records[], int count) {
-    char date[15], time[6];
-    int found = 0;
-    printf("Enter date (DD-MM-YYYY): ");
-    scanf("%s", date);
-    printf("Enter time (HH:MM): ");
-    scanf("%s", time);
-
-    printf("\nVacant rooms on %s at %s:\n", date, time);
-    for (int i = 0; i < count; i++) {
-        if (strcmp(records[i].date, date) == 0 &&
-            strcmp(records[i].time, time) == 0 &&
-            strcmp(records[i].status, "Vacant") == 0) {
-            printf("Room %s in Building %s\n", records[i].room, records[i].building);
-            found = 1;
-        }
-    }
-    if (!found) printf("No vacant rooms found.\n");
-}
-
-void option2(RoomRecord records[], int count) {
-    char day[10], time[6];
-    int found = 0;
-    printf("Enter day (e.g., Monday): ");
-    scanf("%s", day);
-    printf("Enter time (HH:MM): ");
-    scanf("%s", time);
-
-    printf("\nVacant rooms on %s at %s:\n", day, time);
-    for (int i = 0; i < count; i++) {
-        if (strcmp(records[i].day, day) == 0 &&
-            strcmp(records[i].time, time) == 0 &&
-            strcmp(records[i].status, "Vacant") == 0) {
-            printf("Room %s in Building %s\n", records[i].room, records[i].building);
-            found = 1;
-        }
-    }
-    if (!found) printf("No vacant rooms found.\n");
-}
-
-void option3(RoomRecord records[], int count) {
-    char room[10], date[15];
-    int found = 0;
-    printf("Enter room number (e.g., 101): ");
-    scanf("%s", room);
-    printf("Enter date (DD-MM-YYYY): ");
-    scanf("%s", date);
-
-    printf("\nSchedule for Room %s on %s:\n", room, date);
-    for (int i = 0; i < count; i++) {
-        if (strcmp(records[i].room, room) == 0 &&
-            strcmp(records[i].date, date) == 0) {
-            printf("%s at %s - %s\n", records[i].day, records[i].time, records[i].status);
-            found = 1;
-        }
-    }
-    if (!found) printf("No records found for this room on given date.\n");
-}
-
 int main() {
     RoomRecord records[MAX_RECORDS];
-    int count = parseCSV("room_schedule.csv", records);
-
-    if (count == 0) return 1;
-
+    int count = parseCSV(records);
     int choice;
-    printf("\nCampus Room Tracker\n");
-    printf("1. Search by Date and Time\n");
-    printf("2. Search by Day and Time\n");
-    printf("3. Search by Room Number and Date\n");
-    printf("Enter your choice (1-3): ");
-    scanf("%d", &choice);
 
-    switch (choice) {
-        case 1: option1(records, count); break;
-        case 2: option2(records, count); break;
-        case 3: option3(records, count); break;
-        default: printf("Invalid choice.\n"); break;
-    }
+    do {
+        printf("\n \t=== Classroom Finder ===\n");
+        printf("1. Search vacant rooms by date and time\n");
+        printf("2. Search vacant rooms by day and time\n");
+        printf("3. Show schedule by room and day\n");
+        printf("4. View full timetable by building and floor\n");
+        printf("5. Search room status by building and room\n");
+        printf("6. Exit\n");
+        printf("Enter your choice (1-6): ");
+        scanf("%d", &choice);
+        getchar();
 
+        if (choice == 1) {
+            char day[10], time[20];
+            printf("Enter day (e.g., Monday): ");
+            fgets(day, sizeof(day), stdin);
+            trim(day);
+            toLowerCase(day);
+
+            printf("Enter time (e.g., 09:00-10:00): ");
+            fgets(time, sizeof(time), stdin);
+            trim(time);
+
+            printf("\nVacant rooms on %s at %s:\n", day, time);
+            int found = 0;
+            for (int i = 0; i < count; i++) {
+                char dayLower[10];
+                strcpy(dayLower, records[i].day);
+                toLowerCase(dayLower);
+
+                if (strcmp(dayLower, day) == 0 &&
+                    strcmp(records[i].timeSlot, time) == 0 &&
+                    strlen(records[i].course) == 0) { 
+                    printf("%s\n", records[i].room);
+                    found = 1;
+                }
+            }
+            if (!found) printf("No vacant rooms found.\n");
+        }
+
+        else if (choice == 2) {
+            char day[10], time[20];
+            printf("Enter day (e.g., Monday): ");
+            fgets(day, sizeof(day), stdin);
+            trim(day);
+            toLowerCase(day);
+
+            printf("Enter time (e.g., 09:00-10:00): ");
+            fgets(time, sizeof(time), stdin);
+            trim(time);
+
+            printf("\nVacant rooms on %s at %s:\n", day, time);
+            int found = 0;
+            for (int i = 0; i < count; i++) {
+                char dayLower[10];
+                strcpy(dayLower, records[i].day);
+                toLowerCase(dayLower);
+
+                if (strcmp(dayLower, day) == 0 &&
+                    strcmp(records[i].timeSlot, time) == 0 &&
+                    strlen(records[i].course) == 0) {
+                    printf("%s\n", records[i].room);
+                    found = 1;
+                }
+            }
+            if (!found) printf("No vacant rooms found.\n");
+        }
+
+        else if (choice == 3) {
+            char room[10], day[10];
+            printf("Enter room number (e.g., 3014): ");
+            fgets(room, sizeof(room), stdin);
+            trim(room);
+
+            printf("Enter day (e.g., Monday): ");
+            fgets(day, sizeof(day), stdin);
+            trim(day);
+            toLowerCase(day);
+
+            printf("\nSchedule for Room %s on %s:\n", room, day);
+            int found = 0;
+            for (int i = 0; i < count; i++) {
+                char dayLower[10];
+                strcpy(dayLower, records[i].day);
+                toLowerCase(dayLower);
+
+                if (strcmp(records[i].room, room) == 0 && strcmp(dayLower, day) == 0) {
+                    printf("%s - %s - %s\n", records[i].timeSlot,
+                           strlen(records[i].course) == 0 ? "Vacant" : "Occupied",
+                           strlen(records[i].course) == 0 ? "-" : records[i].course);
+                    found = 1;
+                }
+            }
+            if (!found) printf("No records found for this room on given day.\n");
+        }
+
+        else if (choice == 4) {
+            int building, floor;
+            printf("Enter building number (1-4): ");
+            scanf("%d", &building);
+            printf("Enter floor number (1-4): ");   // Changed from 0-3 to 1-4
+            scanf("%d", &floor);
+            getchar();
+
+            char matchedRooms[MAX_RECORDS][10];
+            int matchedCount = 0;
+
+            for (int i = 0; i < count; i++) {
+                // Assuming room numbering format: first digit = building, second digit = floor
+                if ((records[i].room[0] - '0') == building && (records[i].room[1] - '0') == floor) {
+                    int exists = 0;
+                    for (int j = 0; j < matchedCount; j++) {
+                        if (strcmp(matchedRooms[j], records[i].room) == 0) {
+                            exists = 1;
+                            break;
+                        }
+                    }
+                    if (!exists) {
+                        strcpy(matchedRooms[matchedCount], records[i].room);
+                        matchedCount++;
+                    }
+                }
+            }
+
+            if (matchedCount == 0) {
+                printf("\nNo rooms found on Building %d, Floor %d.\n", building, floor);
+            } else {
+                printf("\nTimetable for Building %d, Floor %d:\n", building, floor);
+                for (int i = 0; i < matchedCount; i++) {
+                    printf("\nRoom %s:\n", matchedRooms[i]);
+                    int found = 0;
+                    for (int j = 0; j < count; j++) {
+                        if (strcmp(records[j].room, matchedRooms[i]) == 0) {
+                            printf("%s %s - %s\n", records[j].day, records[j].timeSlot,
+                                strlen(records[j].course) == 0 ? "Vacant" : "Occupied");
+                            found = 1;
+                        }
+                    }
+                    if (!found) printf("No records for this room.\n");
+                }
+            }
+        }
+
+
+        else if (choice == 5) {
+            char room[10];
+            printf("Enter room number (e.g., 3014): ");
+            fgets(room, sizeof(room), stdin);
+            trim(room);
+
+            printf("\nStatus for Room %s:\n", room);
+            int found = 0;
+            for (int i = 0; i < count; i++) {
+                if (strcmp(records[i].room, room) == 0) {
+                    printf("%s %s - %s\n", records[i].day, records[i].timeSlot,
+                           strlen(records[i].course) == 0 ? "Vacant" : "Occupied");
+                    found = 1;
+                }
+            }
+            if (!found) printf("No matching records found for this room.\n");
+        }
+
+        else if (choice != 6) {
+            printf("Invalid choice. Please try again.\n");
+        }
+
+    } while (choice != 6);
+
+    printf("Press Enter to exit...");
+    getchar();
     return 0;
 }
