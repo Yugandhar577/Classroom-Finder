@@ -85,45 +85,16 @@ int main() {
 
     do {
         printf("\n \t=== Classroom Finder ===\n");
-        printf("1. Search vacant rooms by date and time\n");
-        printf("2. Search vacant rooms by day and time\n");
-        printf("3. Show schedule by room and day\n");
-        printf("4. View full timetable by building and floor\n");
-        printf("5. Search room status by building and room\n");
-        printf("6. Exit\n");
-        printf("Enter your choice (1-6): ");
+        printf("1. Search vacant rooms by day and time\n");
+        printf("2. Show schedule by room and day\n");
+        printf("3. View full timetable by building and floor\n");
+        printf("4. Search room status by building and room\n");
+        printf("5. Exit\n");
+        printf("Enter your choice (1-5): ");
         scanf("%d", &choice);
         getchar();
 
         if (choice == 1) {
-            char day[10], time[20];
-            printf("Enter day (e.g., Monday): ");
-            fgets(day, sizeof(day), stdin);
-            trim(day);
-            toLowerCase(day);
-
-            printf("Enter time (e.g., 09:00-10:00): ");
-            fgets(time, sizeof(time), stdin);
-            trim(time);
-
-            printf("\nVacant rooms on %s at %s:\n", day, time);
-            int found = 0;
-            for (int i = 0; i < count; i++) {
-                char dayLower[10];
-                strcpy(dayLower, records[i].day);
-                toLowerCase(dayLower);
-
-                if (strcmp(dayLower, day) == 0 &&
-                    strcmp(records[i].timeSlot, time) == 0 &&
-                    strlen(records[i].course) == 0) { 
-                    printf("%s\n", records[i].room);
-                    found = 1;
-                }
-            }
-            if (!found) printf("No vacant rooms found.\n");
-        }
-
-        else if (choice == 2) {
             char day[10], time[20];
             printf("Enter day (e.g., Monday): ");
             fgets(day, sizeof(day), stdin);
@@ -151,7 +122,7 @@ int main() {
             if (!found) printf("No vacant rooms found.\n");
         }
 
-        else if (choice == 3) {
+        else if (choice == 2) {
             char room[10], day[10];
             printf("Enter room number (e.g., 3014): ");
             fgets(room, sizeof(room), stdin);
@@ -179,7 +150,7 @@ int main() {
             if (!found) printf("No records found for this room on given day.\n");
         }
 
-        else if (choice == 4) {
+        else if (choice == 3) {
             int building, floor;
             printf("Enter building number (1-4): ");
             scanf("%d", &building);
@@ -227,7 +198,7 @@ int main() {
         }
 
 
-        else if (choice == 5) {
+        else if (choice == 4) {
             char room[10];
             printf("Enter room number (e.g., 3014): ");
             fgets(room, sizeof(room), stdin);
@@ -245,11 +216,11 @@ int main() {
             if (!found) printf("No matching records found for this room.\n");
         }
 
-        else if (choice != 6) {
+        else if (choice != 5) {
             printf("Invalid choice. Please try again.\n");
         }
 
-    } while (choice != 6);
+    } while (choice != 5);
 
     printf("Press Enter to exit...");
     getchar();
