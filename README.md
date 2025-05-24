@@ -44,19 +44,15 @@ The system provides the following options:
 
    * Displays records only for a specific day (e.g., "Monday").
 
-3. **Filter by Date**
-
-   * Shows bookings that match a specific calendar date (e.g., "2024-03-20").
-
-4. **Floor-wise Timetable**
+3. **Floor-wise Timetable**
 
    * Shows full room usage data for all rooms on a specific floor within a building.
 
-5. **Room Status Lookup**
+4. **Room Status Lookup**
 
    * Displays the complete usage schedule of a specific room on different dates and times.
 
-6. **Exit**
+5. **Exit**
 
    * Closes the program.
 
