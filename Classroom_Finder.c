@@ -21,7 +21,6 @@ void trim(char *str) {
     char *start = str;
     while (isspace((unsigned char)*start)) start++;
     if (start != str) memmove(str, start, strlen(start) + 1);
-
     // Trim trailing spaces
     char *end = str + strlen(str) - 1;
     while (end > str && isspace((unsigned char)*end)) {
@@ -32,6 +31,48 @@ void trim(char *str) {
 
 void toLowerCase(char *str) {
     for (int i = 0; str[i]; i++) str[i] = tolower(str[i]);
+}
+
+int isValidDay(const char *day) {
+    char *days[] = {"monday", "tuesday", "wednesday", "thursday", "friday", "saturday"};
+    for (int i = 0; i < 6; i++) {
+        if (strcmp(day, days[i]) == 0) return 1;
+    }
+    return 0;
+}
+
+int isValidTimeSlot(const char *timeSlot) {
+    if (strlen(timeSlot) != 11 || timeSlot[2] != ':' || timeSlot[5] != '-' || timeSlot[8] != ':') return 0;
+    for (int i = 0; i < 11; i++) {
+        if ((i == 2 || i == 5 || i == 8) && timeSlot[i] != ':') continue;
+        if (!isdigit((unsigned char)timeSlot[i])) return 0;
+    }
+    return 1;
+}
+
+int isDigitsOnly(const char *str) {
+    for (int i = 0; str[i]; i++) {
+        if (!isdigit(str[i])) return 0;
+    }
+    return 1;
+}
+
+int isValidRoomNumber(const char *room) {
+    if (strlen(room) != 4) return 0;
+
+    for (int i = 0; i < 4; i++) {
+        if (!isdigit(room[i])) return 0;
+    }
+
+    int building = room[0] - '0';
+    int floor = room[1] - '0';
+    int roomIndex = (room[2] - '0') * 10 + (room[3] - '0');
+
+    if (building < 1 || building > 4) return 0;
+    if (floor < 0 || floor > 4) return 0;
+    if (roomIndex < 0 || roomIndex > 25) return 0;
+
+    return 1;
 }
 
 int parseCSV(RoomRecord records[]) {
@@ -88,22 +129,34 @@ int main() {
         printf("1. Search vacant rooms by day and time\n");
         printf("2. Show schedule by room and day\n");
         printf("3. View full timetable by building and floor\n");
-        printf("4. Search room status by building and room\n");
+        printf("4. Search individual room status\n");
         printf("5. Exit\n");
         printf("Enter your choice (1-5): ");
-        scanf("%d", &choice);
+        if (scanf("%d", &choice) != 1 || choice < 1 || choice > 5) {
+            printf("Invalid choice. Please enter a number between 1 and 5.\n");
+            while (getchar() != '\n');
+            continue;
+        }
         getchar();
 
         if (choice == 1) {
             char day[10], time[20];
-            printf("Enter day (e.g., Monday): ");
-            fgets(day, sizeof(day), stdin);
-            trim(day);
-            toLowerCase(day);
+            while (1) {
+                printf("Enter day (e.g., Monday): ");
+                fgets(day, sizeof(day), stdin);
+                trim(day);
+                toLowerCase(day);
+                if (isValidDay(day)) break;
+                printf("Invalid day. Please enter a valid weekday (Mon-Sat).\n");
+            }
 
-            printf("Enter time (e.g., 09:00-10:00): ");
-            fgets(time, sizeof(time), stdin);
-            trim(time);
+            while (1) {
+                printf("Enter time (e.g., 09:00-10:00): ");
+                fgets(time, sizeof(time), stdin);
+                trim(time);
+                if (isValidTimeSlot(time)) break;
+                printf("Invalid time format. Use hh:mm-hh:mm.\n");
+            }
 
             printf("\nVacant rooms on %s at %s:\n", day, time);
             int found = 0;
@@ -124,14 +177,22 @@ int main() {
 
         else if (choice == 2) {
             char room[10], day[10];
-            printf("Enter room number (e.g., 3014): ");
-            fgets(room, sizeof(room), stdin);
-            trim(room);
-
-            printf("Enter day (e.g., Monday): ");
-            fgets(day, sizeof(day), stdin);
-            trim(day);
-            toLowerCase(day);
+           while (1) {
+                printf("Enter room number (e.g., 3014): ");
+                fgets(room, sizeof(room), stdin);
+                trim(room);
+                if (isValidRoomNumber(room)) break;
+                else printf("Invalid room number. Please enter again.\n");
+            }
+                
+            while (1) {
+                printf("Enter day (e.g., Monday): ");
+                fgets(day, sizeof(day), stdin);
+                trim(day);
+                toLowerCase(day);
+                if (isValidDay(day)) break;
+                printf("Invalid day. Please enter a valid weekday (Mon-Sat).\n");
+            }
 
             printf("\nSchedule for Room %s on %s:\n", room, day);
             int found = 0;
@@ -152,11 +213,18 @@ int main() {
 
         else if (choice == 3) {
             int building, floor;
-            printf("Enter building number (1-4): ");
-            scanf("%d", &building);
-            printf("Enter floor number (1-4): ");   // Changed from 0-3 to 1-4
-            scanf("%d", &floor);
-            getchar();
+            if (scanf("%d", &building) != 1 || building < 1 || building > 4) {
+                printf("Invalid building number.\n");
+                while (getchar() != '\n');
+                continue;
+            }
+
+            printf("Enter floor number (0-4): ");
+            if (scanf("%d", &floor) != 1 || floor < 0 || floor > 4) {
+                printf("Invalid floor number.\n");
+                while (getchar() != '\n');
+                continue;
+            }
 
             char matchedRooms[MAX_RECORDS][10];
             int matchedCount = 0;
@@ -197,12 +265,16 @@ int main() {
             }
         }
 
-
         else if (choice == 4) {
             char room[10];
-            printf("Enter room number (e.g., 3014): ");
-            fgets(room, sizeof(room), stdin);
-            trim(room);
+            while (1) {
+                printf("Enter room number (e.g., 3014): ");
+                fgets(room, sizeof(room), stdin);
+                trim(room);
+
+                if (isValidRoomNumber(room)) break;
+                else printf("Invalid room number. Please enter again.\n");
+            }
 
             printf("\nStatus for Room %s:\n", room);
             int found = 0;
