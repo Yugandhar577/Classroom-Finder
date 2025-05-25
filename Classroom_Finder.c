@@ -44,7 +44,7 @@ int isValidDay(const char *day) {
 int isValidTimeSlot(const char *timeSlot) {
     if (strlen(timeSlot) != 11 || timeSlot[2] != ':' || timeSlot[5] != '-' || timeSlot[8] != ':') return 0;
     for (int i = 0; i < 11; i++) {
-        if ((i == 2 || i == 5 || i == 8) && timeSlot[i] != ':') continue;
+        if (i == 2 || i == 5 || i == 8) continue;
         if (!isdigit((unsigned char)timeSlot[i])) return 0;
     }
     return 1;
@@ -125,7 +125,7 @@ int main() {
     int choice;
 
     do {
-        printf("\n \t=== Classroom Finder ===\n");
+        printf("\n \t=== Campus Room Tracker ===\n");
         printf("1. Search vacant rooms by day and time\n");
         printf("2. Show schedule by room and day\n");
         printf("3. View full timetable by building and floor\n");
@@ -213,16 +213,18 @@ int main() {
 
         else if (choice == 3) {
             int building, floor;
+
+            printf("Enter building number (1-4): ");
             if (scanf("%d", &building) != 1 || building < 1 || building > 4) {
                 printf("Invalid building number.\n");
-                while (getchar() != '\n');
+                while (getchar() != '\n' && getchar() != EOF);
                 continue;
             }
 
             printf("Enter floor number (0-4): ");
             if (scanf("%d", &floor) != 1 || floor < 0 || floor > 4) {
                 printf("Invalid floor number.\n");
-                while (getchar() != '\n');
+                while (getchar() != '\n' && getchar() != EOF);
                 continue;
             }
 
@@ -230,7 +232,6 @@ int main() {
             int matchedCount = 0;
 
             for (int i = 0; i < count; i++) {
-                // Assuming room numbering format: first digit = building, second digit = floor
                 if ((records[i].room[0] - '0') == building && (records[i].room[1] - '0') == floor) {
                     int exists = 0;
                     for (int j = 0; j < matchedCount; j++) {
@@ -293,7 +294,6 @@ int main() {
         }
 
     } while (choice != 5);
-
     printf("Press Enter to exit...");
     getchar();
     return 0;
