@@ -293,7 +293,7 @@ int main() {
         }
 
         else if (choice == 4) {
-            char room[10], day[10], time[20];
+            char room[10];
             printf("\n\033[1;36m--- Individual Room Status Search ---\033[0m\n");
             while (1) {
                 printf("Enter room number (e.g., 3014): ");
@@ -302,38 +302,20 @@ int main() {
                 if (isValidRoomNumber(room)) break;
                 else printf("\033[1;31mInvalid room number. Please enter again.\033[0m\n");
             }
-            while (1) {
-                printf("Enter day (e.g., Monday): ");
-                fgets(day, sizeof(day), stdin);
-                trim(day);
-                toLowerCase(day);
-                if (isValidDay(day)) break;
-                printf("\033[1;31mInvalid day. Please enter a valid weekday (Mon-Sat).\033[0m\n");
-            }
-            while (1) {
-                printf("Enter time (e.g., 09:00-10:00): ");
-                fgets(time, sizeof(time), stdin);
-                trim(time);
-                if (isValidTimeSlot(time)) break;
-                printf("\033[1;31mInvalid time slot format. Please enter as HH:MM-HH:MM.\033[0m\n");
-            }
 
-            printf("\n\033[1;35mStatus for room %s on %s at %s:\033[0m\n", room, day, time);
+            printf("\n\033[1;35mStatus for Room %s:\033[0m\n", room);
+            printf("---------------------------------------------------------\n");
+            printf("%-20s %-25s %-20s\n", "Day", "Time Slot", "Status");
+            printf("---------------------------------------------------------\n");
             int found = 0;
             for (int i = 0; i < count; i++) {
-                if (strcmp(records[i].room, room) == 0 &&
-                    strcmp(records[i].day, day) == 0 &&
-                    strcmp(records[i].timeSlot, time) == 0) {
-                    if (strlen(records[i].course)) {
-                        printf("Occupied by %s (Course: %s)\n", records[i].teacher, records[i].course);
-                    } else {
-                        printf("Vacant\n");
-                    }
+                if (strcmp(records[i].room, room) == 0) {
+                    printf("%-20s %-25s %-20s\n", records[i].day, records[i].timeSlot,
+                           strlen(records[i].course) == 0 ? "Vacant" : "Occupied");
                     found = 1;
-                    break;
                 }
             }
-            if (!found) printf("No record found for this room at the specified time.\n");
+            if (!found) printf("\033[1;31mNo matching records found for this room.\033[0m\n");
         }
 
         else if (choice == 5) {
